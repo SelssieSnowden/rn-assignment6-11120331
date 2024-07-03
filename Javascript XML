@@ -1,0 +1,59 @@
+import React, { useState, useEffect } from 'react';
+import { View, Text, Button } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const ShoppingCart = () => {
+  const [cartItems, setCartItems] = useState([]);
+
+  useEffect(() => {
+    const getCartItems = async () => {
+      try {
+        const items = await AsyncStorage.getItem('cartItems');
+        if (items) {
+          setCartItems(JSON.parse(items));
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    getCartItems();
+  }, []);
+
+  const addToCart = async (item) => {
+    try {
+      const updatedCart = [...cartItems, item];
+      await AsyncStorage.setItem('cartItems', JSON.stringify(updatedCart));
+      setCartItems(updatedCart);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const removeFromCart = async (index) => {
+    try {
+      const updatedCart = cartItems.filter((_, i) => i !== index);
+      await AsyncStorage.setItem('cartItems', JSON.stringify(updatedCart));
+      setCartItems(updatedCart);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  return (
+    <View>
+      <Text>Cart Items:</Text>
+      {cartItems && cartItems.map((item, index) => (
+        <View key={index}>
+          <Text>{item}</Text>
+          <Button title="Remove" onPress={() => removeFromCart(index)} />
+        </View>
+      ))}
+      <Button title="Add Item to Cart" onPress={() => addToCart(`New Item ${cartItems.length + 1}`)} />
+    </View>
+  );
+};
+
+export default ShoppingCart;
+
+
